@@ -1,0 +1,57 @@
+# Vertical "curso-python" — Sintia Academy. mode: course → sin ingest de noticias: una lección por día desde el syllabus.
+name: curso-python
+mode: course
+timezone: America/Buenos_Aires
+languages: [es]
+geo: {country: null, region: "LatAm"}
+syllabus: verticals/curso-python.syllabus.yaml
+
+brand:
+  name: Sintia Academy
+  tagline: {es: "Python en 30 días, una lección por día, dictada por una IA."}
+  site_url: https://fmpede.github.io/ia-news-machine/curso-python
+  corrections_email: correcciones@sintia.news
+  handles: {es: {telegram: "@sintia_academy", bluesky: sintia-academy.bsky.social, youtube: "@sintia_academy"}}
+  colors: {bg: "#0F172A", fg: "#F8FAFC", accent: "#FACC15", muted: "#94A3B8"}
+  fonts: {title: assets/fonts/Inter.ttf, body: assets/fonts/Inter.ttf}
+  logo: assets/logo/curso-python.png
+  illustration_style: "clean minimal illustration, notebook and code symbols, yellow accent on navy, no text, no logos, no people"
+  disclosure:
+    es: "🤖 Lección generada con IA · Fuente:"
+    bio_es: "Curso generado con inteligencia artificial y supervisado por un editor humano. Fines educativos, sin resultados garantizados. Fuentes: la documentación oficial citada en cada lección."
+    overlay: {es: "Generado con IA · fines educativos"}
+    voice: {es: "Esta lección fue generada con inteligencia artificial."}
+    hashtag: "#AIGenerated"
+
+audience: {es: "Personas que arrancan a programar desde cero, 10 minutos por día, desde el celular."}
+tone: {es: "Paciente, concreto, un ejemplo corto por concepto, sin jerga innecesaria, voseo."}
+
+selection: {lessons_per_day: 1, hero: 1, min_score: 0, max_age_hours: 999999, max_per_source: 99, dedup_window_days: 3650, dedup_similarity: 0.99, max_risk_for_hero: 100}
+
+formats:
+  post:    {enabled: true, thread_max: 6}
+  image:   {enabled: true, hero: carousel, story: single, carousel_slides: 8,
+            sizes: {square: [1080, 1080], portrait: [1080, 1350], story: [1080, 1920]}}
+  video:   {enabled: true, per_day: 1, max_seconds: 60, max_words: 130, voice: {es: es-AR-TomasNeural}, music: null, music_volume: 0.12}
+  article: {enabled: true, min_words: 600, max_words: 1200}
+  digest:  {enabled: false}
+
+networks:
+  es:
+    telegram: {enabled: false, publisher: telegram, chat_id: "@sintia_academy", formats: [post, image, video]}
+    bluesky:  {enabled: false, publisher: bluesky,  env: NM_CURSO_ES_BSKY, formats: [post, image]}
+    youtube:  {enabled: false, publisher: youtube,  env: NM_CURSO_ES_YT,   formats: [video]}
+
+editorial:
+  locked: {require_source_url: true, max_quote_words: 25, people_sensitive: block_without_source, disclosure_everywhere: true}
+  rules:
+    - "Cada afirmación técnica cita la documentación oficial listada en las referencias de la lección."
+    - "Un ejemplo de código corto y ejecutable por concepto; explicar qué imprime."
+    - "Cerrar con un ejercicio de 5 minutos y la respuesta."
+    - "Decir 'fines educativos, sin resultados garantizados' en el artículo."
+  angles: ["para qué sirve", "error típico", "ejemplo de la vida real"]
+  banned_words: {es: [fácil, trivial, obvio]}
+  hashtags: {es: ["#Python", "#AprenderAProgramar"]}
+  network_limits: {bluesky: 300, telegram: 4096}
+
+site: {enabled: true, path: curso-python, per_page: 30, keep_video_days: 30}

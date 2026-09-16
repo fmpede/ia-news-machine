@@ -1,0 +1,21 @@
+course: "Python en 30 días"
+lessons:
+  - id: 1
+    title: "Instalar Python y correr tu primer script"
+    objectives: ["Instalar Python 3", "Ejecutar un archivo .py", "Usar print()"]
+    key_points: ["python.org/downloads", "python3 hola.py", "print muestra texto en pantalla"]
+    references:
+      - {title: "Python docs: Using Python", url: https://docs.python.org/3/using/index.html}
+      - {title: "Python tutorial: Whetting your appetite", url: https://docs.python.org/3/tutorial/appetite.html}
+  - id: 2
+    title: "Variables y tipos básicos"
+    objectives: ["Guardar valores en variables", "Distinguir int, float, str, bool", "Convertir tipos"]
+    key_points: ["nombre = valor", "type(x)", "int('3'), str(3)"]
+    references:
+      - {title: "Python tutorial: An informal introduction", url: https://docs.python.org/3/tutorial/introduction.html}
+  - id: 3
+    title: "Condicionales: if, elif, else"
+    objectives: ["Tomar decisiones en el código", "Comparar valores", "Anidar condiciones con criterio"]
+    key_points: ["if x > 0:", "elif / else", "and, or, not"]
+    references:
+      - {title: "Python tutorial: More control flow tools", url: https://docs.python.org/3/tutorial/controlflow.html}

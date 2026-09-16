@@ -1,0 +1,9 @@
+feedparser>=6.0
+Pillow>=11.0
+PyYAML>=6.0
+requests>=2.32
+requests-oauthlib>=2.0
+anthropic>=0.60
+jinja2>=3.1
+edge-tts>=7.0
+pytest>=8.0

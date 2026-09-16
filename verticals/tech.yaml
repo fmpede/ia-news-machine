@@ -1,0 +1,106 @@
+# Vertical "tech" — Sintia Tech. Cambiar de vertical = otro YAML como este. Cero Python.
+name: tech
+mode: news                      # news | course
+timezone: America/Buenos_Aires
+languages: [es, en]
+geo: {country: null, region: "LatAm + global"}
+
+brand:
+  name: Sintia
+  tagline:
+    es: "Las novedades tech de cada día, contadas por una IA."
+    en: "Daily tech news, told by an AI."
+  site_url: https://fmpede.github.io/ia-news-machine
+  corrections_email: correcciones@sintia.news
+  handles:
+    es: {bluesky: sintia-es.bsky.social, mastodon: "@sintia_es@mastodon.social", telegram: "@sintia_es", x: "@sintia_es", threads: "@sintia_es", instagram: "@sintianews", youtube: "@sintia_es", tiktok: "@sintia_es"}
+    en: {bluesky: sintia-en.bsky.social, mastodon: "@sintia_en@mastodon.social", telegram: "@sintia_en", x: "@sintia_en", threads: "@sintia_en", instagram: "@sintianews_en", youtube: "@sintia_en", tiktok: "@sintia_en"}
+  colors: {bg: "#0B0F19", fg: "#F8FAFC", accent: "#22D3EE", muted: "#94A3B8"}
+  fonts: {title: assets/fonts/Inter.ttf, body: assets/fonts/Inter.ttf}   # fuente variable OFL; images.py usa set_variation_by_name("Bold"/"Regular")
+  logo: assets/logo/tech.png
+  illustration_style: "flat editorial illustration, dark navy background, cyan accent, geometric shapes, no text, no letters, no logos, no real people, no faces"
+  disclosure:                   # LOCKED: la rutina editora no puede tocarlo
+    es: "🤖 Generado con IA · Fuente:"
+    en: "🤖 AI-generated · Source:"
+    bio_es: "Medio generado con inteligencia artificial y supervisado por un editor humano. Reportamos según fuentes públicas citadas en cada nota."
+    bio_en: "AI-generated media outlet, supervised by a human editor. We report from the public sources cited in each post."
+    overlay: {es: "Generado con IA · fuentes en la descripción", en: "AI-generated · sources in description"}
+    voice: {es: "Este resumen fue generado con inteligencia artificial.", en: "This summary was generated with artificial intelligence."}
+    hashtag: "#AIGenerated"
+
+audience:
+  es: "Profesionales y curiosos de tecnología en Latinoamérica; leen en el celular, 30 segundos por post."
+  en: "Global tech-curious professionals; mobile skim-readers."
+tone:
+  es: "Directo, claro, sin hype, voseo rioplatense suave, cero clickbait, una idea por post."
+  en: "Direct, plain, no hype, no clickbait, mildly witty, one idea per post."
+
+sources:                        # type: rss | hn | github_trending | arxiv | google_news
+  - {type: rss, name: "The Verge",    url: https://www.theverge.com/rss/index.xml,          lang: en, weight: 1.0}
+  - {type: rss, name: "Ars Technica", url: https://feeds.arstechnica.com/arstechnica/index, lang: en, weight: 1.0}
+  - {type: rss, name: "TechCrunch",   url: https://techcrunch.com/feed/,                    lang: en, weight: 0.9}
+  - {type: rss, name: "Xataka",       url: https://www.xataka.com/feedburner.xml,           lang: es, weight: 0.9}
+  - {type: hn, name: "Hacker News", min_points: 150, weight: 1.2}
+  - {type: github_trending, name: "GitHub", min_stars: 300, weight: 0.6}
+  - {type: arxiv, name: "arXiv", query: "cat:cs.AI OR cat:cs.LG", max: 15, weight: 0.5}
+  - {type: google_news, name: "Google News", query: "inteligencia artificial", hl: es-419, gl: AR, lang: es, weight: 0.7}
+
+selection:
+  stories_per_day: 6
+  hero: 1
+  min_score: 55
+  max_age_hours: 36
+  max_per_source: 2
+  dedup_window_days: 30
+  dedup_similarity: 0.6
+  max_risk_for_hero: 40
+
+formats:
+  post:    {enabled: true, thread_max: 4}
+  image:   {enabled: true, hero: carousel, story: single, carousel_slides: 6,
+            sizes: {square: [1080, 1080], portrait: [1080, 1350], story: [1080, 1920]}}
+  video:   {enabled: true, per_day: 1, max_seconds: 60, max_words: 130,
+            voice: {es: es-AR-TomasNeural, en: en-US-AndrewNeural},
+            music: null, music_volume: 0.12}
+  article: {enabled: true, min_words: 250, max_words: 500}
+  digest:  {enabled: true}
+
+networks:                       # publisher = clave de publishers.PUBLISHERS; env = prefijo de los secrets
+  es:
+    telegram:  {enabled: true,  publisher: telegram,  chat_id: "@sintia_es",     formats: [post, image, video]}
+    bluesky:   {enabled: true,  publisher: bluesky,   env: NM_TECH_ES_BSKY,    formats: [post, image]}
+    mastodon:  {enabled: true,  publisher: mastodon,  env: NM_TECH_ES_MASTO,   formats: [post, image, video], base_url: https://mastodon.social}
+    x:         {enabled: false, publisher: x,         env: NM_TECH_ES_X,       formats: [post, image]}
+    threads:   {enabled: false, publisher: threads,   env: NM_TECH_ES_THREADS, formats: [post, image]}
+    instagram: {enabled: false, publisher: instagram, env: NM_TECH_ES_IG,      formats: [image, video]}
+    youtube:   {enabled: false, publisher: youtube,   env: NM_TECH_ES_YT,      formats: [video]}
+    tiktok:    {enabled: false, publisher: tiktok,    env: NM_TECH_ES_TIKTOK,  formats: [video]}
+  en:
+    telegram:  {enabled: true,  publisher: telegram,  chat_id: "@sintia_en",     formats: [post, image, video]}
+    bluesky:   {enabled: true,  publisher: bluesky,   env: NM_TECH_EN_BSKY,    formats: [post, image]}
+    mastodon:  {enabled: true,  publisher: mastodon,  env: NM_TECH_EN_MASTO,   formats: [post, image, video], base_url: https://mastodon.social}
+    x:         {enabled: false, publisher: x,         env: NM_TECH_EN_X,       formats: [post, image]}
+    threads:   {enabled: false, publisher: threads,   env: NM_TECH_EN_THREADS, formats: [post, image]}
+    instagram: {enabled: false, publisher: instagram, env: NM_TECH_EN_IG,      formats: [image, video]}
+    linkedin:  {enabled: false, publisher: linkedin,  env: NM_TECH_EN_LI,      formats: [post, image]}
+    youtube:   {enabled: false, publisher: youtube,   env: NM_TECH_EN_YT,      formats: [video]}
+    tiktok:    {enabled: false, publisher: tiktok,    env: NM_TECH_EN_TIKTOK,  formats: [video]}
+
+editorial:
+  locked:                       # LOCKED: lo hace cumplir qa.py, nunca solo el prompt
+    require_source_url: true
+    max_quote_words: 25
+    people_sensitive: block_without_source   # block_without_source | hold
+    disclosure_everywhere: true
+  rules:                        # editables por la rutina editora; se inyectan en los prompts
+    - "No inventar cifras, fechas ni citas; si la fuente no lo dice, no se dice."
+    - "Nombrar la fuente dentro del texto (\"según The Verge\"), no solo el link."
+    - "Lo no confirmado va en potencial o atribuido (\"habría\", \"según trascendió\")."
+    - "Una idea por post; sin superlativos vacíos (\"revolucionario\", \"game-changer\")."
+    - "Aportar un ángulo propio: por qué importa, qué cambia para el lector, qué mirar después."
+  angles: ["explicador", "por qué importa", "dato contraintuitivo", "qué cambia para vos", "pregunta abierta", "contexto histórico"]
+  banned_words: {es: [bombazo, brutal, increíble], en: [insane, mind-blowing, game-changer]}
+  hashtags: {es: ["#tecnología", "#IA"], en: ["#tech", "#AI"]}
+  network_limits: {bluesky: 300, x: 280, mastodon: 500, threads: 500, telegram: 4096, instagram: 2200, linkedin: 3000}
+
+site: {enabled: true, path: "", per_page: 30, keep_video_days: 14}

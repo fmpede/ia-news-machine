@@ -1,0 +1,76 @@
+# Vertical "chimentos-ar" — Sintia Chimentos (Argentina). Stub: activar cuando el usuario quiera.
+name: chimentos-ar
+mode: news
+timezone: America/Buenos_Aires
+languages: [es]
+geo: {country: AR, region: "Argentina (Buenos Aires)"}
+
+brand:
+  name: Sintia Chimentos
+  tagline: {es: "La farándula argentina, contada por una IA (con fuentes)."}
+  site_url: https://fmpede.github.io/ia-news-machine/chimentos
+  corrections_email: correcciones@sintia.news
+  handles:
+    es: {bluesky: sintia-chimentos.bsky.social, mastodon: "@sintia_chimentos@mastodon.social", telegram: "@sintia_chimentos", instagram: "@sintiachimentos", tiktok: "@sintia_chimentos"}
+  colors: {bg: "#1A0B2E", fg: "#FFF7FB", accent: "#FF4FA3", muted: "#C9A9D9"}
+  fonts: {title: assets/fonts/Inter.ttf, body: assets/fonts/Inter.ttf}
+  logo: assets/logo/chimentos-ar.png
+  illustration_style: "colorful pop-art collage, TV studio lights, magenta and purple, abstract silhouettes only, no real faces, no text, no logos"
+  disclosure:
+    es: "🤖 Generado con IA · Fuente:"
+    bio_es: "Espectáculos generados con inteligencia artificial y supervisados por un editor humano. Solo contamos lo que ya publicaron medios citados en cada nota. Derecho a réplica: correcciones@sintia.news"
+    overlay: {es: "Generado con IA · fuentes en la descripción"}
+    voice: {es: "Este resumen fue generado con inteligencia artificial."}
+    hashtag: "#AIGenerated"
+
+audience: {es: "Público argentino de 25 a 55 que sigue la farándula local en el celular."}
+tone: {es: "Canchero, irónico, porteño, jamás cruel ni burlón con el cuerpo o la vida privada; siempre 'según <medio>'."}
+
+sources:
+  - {type: google_news, name: "Google News", query: "farándula argentina", hl: es-419, gl: AR, lang: es, weight: 1.0}
+  - {type: google_news, name: "Google News", query: "Gran Hermano Telefe", hl: es-419, gl: AR, lang: es, weight: 0.8}
+  - {type: google_news, name: "Google News", query: "Bailando Marcelo Tinelli", hl: es-419, gl: AR, lang: es, weight: 0.7}
+
+selection:
+  stories_per_day: 5
+  hero: 1
+  min_score: 60
+  max_age_hours: 24
+  max_per_source: 3
+  dedup_window_days: 30
+  dedup_similarity: 0.6
+  max_risk_for_hero: 25
+  min_cluster_sources_for_hero: 2     # el hero necesita ≥ 2 medios distintos
+
+formats:
+  post:    {enabled: true, thread_max: 3}
+  image:   {enabled: true, hero: carousel, story: single, carousel_slides: 5,
+            sizes: {square: [1080, 1080], portrait: [1080, 1350], story: [1080, 1920]}}
+  video:   {enabled: true, per_day: 1, max_seconds: 45, max_words: 100, voice: {es: es-AR-ElenaNeural}, music: null, music_volume: 0.12}
+  article: {enabled: true, min_words: 200, max_words: 400}
+  digest:  {enabled: true}
+
+networks:
+  es:
+    telegram:  {enabled: false, publisher: telegram,  chat_id: "@sintia_chimentos", formats: [post, image, video]}
+    bluesky:   {enabled: false, publisher: bluesky,   env: NM_CHIM_ES_BSKY,   formats: [post, image]}
+    instagram: {enabled: false, publisher: instagram, env: NM_CHIM_ES_IG,     formats: [image, video]}
+    tiktok:    {enabled: false, publisher: tiktok,    env: NM_CHIM_ES_TIKTOK, formats: [video]}
+
+editorial:
+  locked:
+    require_source_url: true
+    max_quote_words: 20
+    people_sensitive: hold              # todo lo que menciona personas va al pack para aprobación manual
+    disclosure_everywhere: true
+  rules:
+    - "Solo hechos ya publicados por medios identificados; los rumores se cuentan como 'según <medio>' y en potencial."
+    - "Nunca menores de edad, nunca salud, sexualidad, embarazos, adicciones ni causas judiciales sin cita textual."
+    - "Nada de comentarios sobre cuerpos ni burlas personales."
+    - "Aportar contexto: quién es, por qué importa ahora, qué se viene."
+  angles: ["qué pasó", "contexto", "qué se viene", "la frase del día"]
+  banned_words: {es: [escándalo, bombazo, destrozó, humilló, gorda, gordo]}
+  hashtags: {es: ["#farándula", "#espectáculos"]}
+  network_limits: {bluesky: 300, mastodon: 500, telegram: 4096, instagram: 2200}
+
+site: {enabled: true, path: chimentos, per_page: 30, keep_video_days: 14}

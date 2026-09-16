@@ -1,0 +1,30 @@
+name: metrics
+on:
+  schedule:
+    - cron: "0 22 * * *"            # 19:00 America/Buenos_Aires
+  workflow_dispatch:
+    inputs:
+      vertical: {default: "tech"}
+concurrency: {group: state, cancel-in-progress: false}
+permissions: {contents: write, actions: write}
+jobs:
+  metrics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SECRETS_JSON: ${{ toJSON(secrets) }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - run: pip install -r requirements.txt
+      - run: python -m newsmachine.metrics --vertical ${{ inputs.vertical || 'tech' }}
+      - name: commit state
+        if: always()
+        run: |
+          git config user.name sintia-bot && git config user.email sintia-bot@users.noreply.github.com
+          git add state/ && (git commit -qm "metrics $(date -u +%F)" || exit 0)
+          git pull --rebase -q && git push -q
+      - name: keep-alive del cron diario
+        run: gh api -X PUT repos/${{ github.repository }}/actions/workflows/daily.yml/enable
