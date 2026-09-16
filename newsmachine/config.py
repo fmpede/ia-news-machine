@@ -1,16 +1,34 @@
 """Config de vertical, prompts, entorno y argumentos comunes de CLI."""
-import argparse, datetime as dt, json, os, string, sys, zoneinfo
+import argparse, datetime as dt, getpass, json, os, string, subprocess, sys, zoneinfo
 from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 REQUIRED = ["name", "mode", "timezone", "languages", "brand", "sources", "selection", "formats", "networks", "editorial"]
+KEYCHAIN_SERVICE = "sintia"
+SECRET_NAMES = [l.split("=", 1)[0].strip() for l in (ROOT / ".env.example").read_text().splitlines()
+                if "=" in l and not l.startswith("#")] if (ROOT / ".env.example").exists() else []
+
+
+def keychain_get(name):
+    r = subprocess.run(["security", "find-generic-password", "-s", KEYCHAIN_SERVICE, "-a", name, "-w"], capture_output=True, text=True)
+    return r.stdout.strip() if r.returncode == 0 else None
+
+
+def keychain_set(name, value):
+    subprocess.run(["security", "add-generic-password", "-U", "-s", KEYCHAIN_SERVICE, "-a", name, "-w", value], check=True, capture_output=True)
+
+
+_LOADED = False
 
 
 def load_env():
-    """SECRETS_JSON (GitHub Actions: toJSON(secrets)) y .env local → os.environ, sin pisar lo ya seteado."""
-    for k, v in json.loads(os.environ.get("SECRETS_JSON") or "{}").items():
-        os.environ.setdefault(k, v)
+    """Orden: variables ya seteadas (GitHub Actions las pasa explícitas) → .env local (gitignored) → Keychain de macOS.
+    Nunca se leen secretos de archivos versionados."""
+    global _LOADED
+    if _LOADED:
+        return
+    _LOADED = True
     env = ROOT / ".env"
     if env.exists():
         for line in env.read_text().splitlines():
@@ -18,6 +36,12 @@ def load_env():
                 k, v = line.split("=", 1)
                 if v.strip():
                     os.environ.setdefault(k.strip(), v.strip())
+    if sys.platform == "darwin" and os.environ.get("CI") != "true":
+        for name in SECRET_NAMES:
+            if not os.environ.get(name):
+                v = keychain_get(name)
+                if v:
+                    os.environ[name] = v
 
 
 def load_vertical(name):
@@ -95,9 +119,32 @@ def check(cfg):
     return problems
 
 
+def secrets_cli(args):
+    """--set-secret NAME (pide el valor sin eco y lo guarda en el Keychain) · --list-secrets · --push-secrets (Keychain → GitHub Secrets)."""
+    if args.set_secret:
+        if args.set_secret not in SECRET_NAMES:
+            raise SystemExit(f"{args.set_secret} no está en .env.example; agregalo ahí primero")
+        keychain_set(args.set_secret, getpass.getpass(f"valor de {args.set_secret}: ").strip())
+        print(f"guardado en Keychain (servicio '{KEYCHAIN_SERVICE}'): {args.set_secret}")
+    if args.list_secrets:
+        for n in SECRET_NAMES:
+            print(("keychain " if keychain_get(n) else "         ") + ("env " if os.environ.get(n) else "    ") + n)
+    if args.push_secrets:
+        repo = subprocess.run(["gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"], capture_output=True, text=True).stdout.strip()
+        for n in SECRET_NAMES:
+            v = keychain_get(n)
+            if v:
+                subprocess.run(["gh", "secret", "set", n, "--repo", repo], input=v, text=True, check=True)
+                print("GitHub Secret actualizado:", n)
+
+
 if __name__ == "__main__":
-    def _extra(ap): ap.add_argument("--check", action="store_true")
+    def _extra(ap):
+        ap.add_argument("--check", action="store_true")
+        ap.add_argument("--set-secret", metavar="NAME"); ap.add_argument("--list-secrets", action="store_true"); ap.add_argument("--push-secrets", action="store_true")
     cfg, args = parse(extra=_extra)
+    if args.set_secret or args.list_secrets or args.push_secrets:
+        secrets_cli(args); sys.exit(0)
     probs = check(cfg)
     print("\n".join(probs) if probs else f"OK vertical={cfg['name']} date={args.date} langs={cfg['languages']}")
     sys.exit(1 if probs else 0)

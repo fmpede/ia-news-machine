@@ -101,7 +101,7 @@ def review(cfg, date, story, lang, rows):
                                   max_quote_words=cfg["editorial"]["locked"]["max_quote_words"], disclosure=cfg["brand"]["disclosure"][lang]),
                            json_schema=SCHEMA, tier="qa", max_tokens=12000)
     except Exception as e:
-        return "blocked", {"issues": [list(i) for i in issues], "error": str(e)[:300], "stage": "llm"}, outputs
+        return "blocked", {"issues": [list(i) for i in issues], "error": db.redact(e)[:300], "stage": "llm"}, outputs
     verdict, qa = out["verdict"], {"issues": [list(i) for i in issues] + out["issues"], "stage": "llm"}
     if verdict == "block":
         return "blocked", qa, outputs

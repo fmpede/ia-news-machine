@@ -48,10 +48,10 @@ def main(argv=None):
                         status, post_id, url, err = "ok", str(res.get("post_id")), res.get("url"), None
                     except publishers.NotConfigured as e:
                         publishers.pack(cfg, args.date, net, p["lang"], story, outs_net, f"no configurado: {e}")
-                        status, post_id, url, err = "packed", None, None, str(e)[:300]
+                        status, post_id, url, err = "packed", None, None, db.redact(e)[:300]
                     except Exception as e:
                         publishers.pack(cfg, args.date, net, p["lang"], story, outs_net, f"falló: {e}")
-                        status, post_id, url, err = "failed", None, None, f"{type(e).__name__}: {str(e)[:300]}"
+                        status, post_id, url, err = "failed", None, None, f"{type(e).__name__}: {db.redact(e)[:300]}"
                         db.log_run(args.date, "publish", "failed", f"{net} {p['lang']} story {p['story_id']}: {err}")
             db.CONN.execute("""INSERT OR REPLACE INTO publish_log (vertical, date, story_id, lang, network, format, status, post_id, url, error, published_at)
                 VALUES (?,?,?,?,?,?,?,?,?,?,?)""", (cfg["name"], args.date, p["story_id"], p["lang"], net, ",".join(k for k in outs_net if k in n.get("formats", [])),

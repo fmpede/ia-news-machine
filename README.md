@@ -49,6 +49,13 @@ Cada fila desbloquea un publisher. Hasta que exista el secret, la red queda `ena
 
 Después de cargar un secret: poné `enabled: true` en la red correspondiente de `verticals/tech.yaml`.
 
+## Seguridad de credenciales
+
+- **En el repo nunca hay secretos.** `.env` está en `.gitignore`, `.env.example` solo tiene nombres, `state/` guarda noticias y logs con los tokens redactados (`db.redact` borra valores de secretos y tokens en URLs antes de escribir cualquier error). El test `tests/test_no_secrets.py` escanea todo lo versionado y el hook `scripts/pre-commit` bloquea commits con credenciales (`ln -sf ../../scripts/pre-commit .git/hooks/pre-commit`). GitHub tiene activado *secret scanning* con *push protection*.
+- **Fuente única: el Keychain de tu Mac.** `python -m newsmachine.config --set-secret GEMINI_API_KEY` pide el valor sin eco y lo guarda en el llavero (servicio `sintia`); el pipeline local lo lee solo. `--list-secrets` muestra cuáles existen (sin valores). No hace falta ningún `.env`.
+- **Runtime en GitHub Actions: GitHub Secrets.** Para que el job de las 07:00 publique, necesita las credenciales; van al almacén cifrado de *tu* cuenta (Settings → Secrets → Actions): no se pueden leer después de cargarlas, no aparecen en el repo ni en los logs (GitHub los enmascara) y los workflows los reciben uno por uno por nombre, nunca en bloque. `python -m newsmachine.config --push-secrets` copia lo que hay en el Keychain a GitHub Secrets cifrándolo en tu Mac con la clave pública del repo. Si preferís que ninguna credencial viva en GitHub, la alternativa es correr el pipeline en la Mac con `launchd` (queda documentado como opción; el costo es depender de que la Mac esté prendida a las 06:15).
+- **Tokens con menos poder.** Usá app passwords (Bluesky), tokens con scopes mínimos (Mastodon: `write:statuses write:media read:statuses`; Cloudflare: solo Workers AI) y límite de gasto en Anthropic Console. Rotar un token = `--set-secret` + `--push-secrets`.
+
 ## Runbook
 
 ```bash

@@ -1,6 +1,6 @@
 """SQLite en memoria, persistido como dump de texto en state/<vertical>.sql (git = DB)."""
-import datetime as dt, os, sqlite3
-from .config import ROOT
+import datetime as dt, os, re, sqlite3
+from .config import ROOT, SECRET_NAMES
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS stories (
@@ -78,8 +78,26 @@ def quota_add(provider, calls=1, tokens=0, errors=0):
         errors=errors+excluded.errors""", (provider, utcnow()[:10], calls, tokens, errors))
 
 
+_PATTERNS = [(re.compile(r"bot\d{6,}:[\w-]{20,}"), "bot***"),
+             (re.compile(r"(?i)(access_token|api_key|apikey|token|key|password|secret)=[^&\s'\"]+"), r"\1=***"),
+             (re.compile(r"(?i)bearer\s+[\w.\-]{12,}"), "Bearer ***")]
+
+
+def redact(text):
+    """Quita valores de secretos y tokens en URLs antes de guardar o imprimir cualquier detalle de error."""
+    text = str(text)
+    for name in SECRET_NAMES:
+        v = os.environ.get(name, "")
+        if len(v) >= 8:
+            text = text.replace(v, "***")
+    for rx, rep in _PATTERNS:
+        text = rx.sub(rep, text)
+    return text
+
+
 def log_run(date, stage, status, detail=""):
-    CONN.execute("INSERT INTO runs VALUES (?,?,?,?,?,?)", (VERTICAL, date, stage, status, str(detail)[:500], utcnow()))
+    detail = redact(detail)[:500]
+    CONN.execute("INSERT INTO runs VALUES (?,?,?,?,?,?)", (VERTICAL, date, stage, status, detail, utcnow()))
     print(f"[{stage}] {status} {detail}"[:300])
 
 
