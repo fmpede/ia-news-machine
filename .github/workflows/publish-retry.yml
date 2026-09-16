@@ -13,7 +13,46 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      SECRETS_JSON: ${{ toJSON(secrets) }}
+      # secrets explícitos (nunca toJSON(secrets): GitHub lo marca como exfiltración)
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      GOOGLE_TTS_KEY: ${{ secrets.GOOGLE_TTS_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_OPERATOR_CHAT_ID: ${{ secrets.TELEGRAM_OPERATOR_CHAT_ID }}
+      NM_TECH_ES_BSKY_HANDLE: ${{ secrets.NM_TECH_ES_BSKY_HANDLE }}
+      NM_TECH_ES_BSKY_APP_PASSWORD: ${{ secrets.NM_TECH_ES_BSKY_APP_PASSWORD }}
+      NM_TECH_ES_MASTO_TOKEN: ${{ secrets.NM_TECH_ES_MASTO_TOKEN }}
+      NM_TECH_ES_X_API_KEY: ${{ secrets.NM_TECH_ES_X_API_KEY }}
+      NM_TECH_ES_X_API_SECRET: ${{ secrets.NM_TECH_ES_X_API_SECRET }}
+      NM_TECH_ES_X_ACCESS_TOKEN: ${{ secrets.NM_TECH_ES_X_ACCESS_TOKEN }}
+      NM_TECH_ES_X_ACCESS_SECRET: ${{ secrets.NM_TECH_ES_X_ACCESS_SECRET }}
+      NM_TECH_ES_THREADS_USER_ID: ${{ secrets.NM_TECH_ES_THREADS_USER_ID }}
+      NM_TECH_ES_THREADS_TOKEN: ${{ secrets.NM_TECH_ES_THREADS_TOKEN }}
+      NM_TECH_ES_IG_USER_ID: ${{ secrets.NM_TECH_ES_IG_USER_ID }}
+      NM_TECH_ES_IG_TOKEN: ${{ secrets.NM_TECH_ES_IG_TOKEN }}
+      NM_TECH_ES_YT_CLIENT_ID: ${{ secrets.NM_TECH_ES_YT_CLIENT_ID }}
+      NM_TECH_ES_YT_CLIENT_SECRET: ${{ secrets.NM_TECH_ES_YT_CLIENT_SECRET }}
+      NM_TECH_ES_YT_REFRESH_TOKEN: ${{ secrets.NM_TECH_ES_YT_REFRESH_TOKEN }}
+      NM_TECH_ES_TIKTOK_TOKEN: ${{ secrets.NM_TECH_ES_TIKTOK_TOKEN }}
+      NM_TECH_EN_BSKY_HANDLE: ${{ secrets.NM_TECH_EN_BSKY_HANDLE }}
+      NM_TECH_EN_BSKY_APP_PASSWORD: ${{ secrets.NM_TECH_EN_BSKY_APP_PASSWORD }}
+      NM_TECH_EN_MASTO_TOKEN: ${{ secrets.NM_TECH_EN_MASTO_TOKEN }}
+      NM_TECH_EN_X_API_KEY: ${{ secrets.NM_TECH_EN_X_API_KEY }}
+      NM_TECH_EN_X_API_SECRET: ${{ secrets.NM_TECH_EN_X_API_SECRET }}
+      NM_TECH_EN_X_ACCESS_TOKEN: ${{ secrets.NM_TECH_EN_X_ACCESS_TOKEN }}
+      NM_TECH_EN_X_ACCESS_SECRET: ${{ secrets.NM_TECH_EN_X_ACCESS_SECRET }}
+      NM_TECH_EN_THREADS_USER_ID: ${{ secrets.NM_TECH_EN_THREADS_USER_ID }}
+      NM_TECH_EN_THREADS_TOKEN: ${{ secrets.NM_TECH_EN_THREADS_TOKEN }}
+      NM_TECH_EN_IG_USER_ID: ${{ secrets.NM_TECH_EN_IG_USER_ID }}
+      NM_TECH_EN_IG_TOKEN: ${{ secrets.NM_TECH_EN_IG_TOKEN }}
+      NM_TECH_EN_YT_CLIENT_ID: ${{ secrets.NM_TECH_EN_YT_CLIENT_ID }}
+      NM_TECH_EN_YT_CLIENT_SECRET: ${{ secrets.NM_TECH_EN_YT_CLIENT_SECRET }}
+      NM_TECH_EN_YT_REFRESH_TOKEN: ${{ secrets.NM_TECH_EN_YT_REFRESH_TOKEN }}
+      NM_TECH_EN_TIKTOK_TOKEN: ${{ secrets.NM_TECH_EN_TIKTOK_TOKEN }}
+      NM_TECH_EN_LI_TOKEN: ${{ secrets.NM_TECH_EN_LI_TOKEN }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
     steps:
