@@ -26,6 +26,8 @@ Estado: SQLite volcado a `state/<vertical>.sql` y commiteado por el workflow (gi
 
 ## Onboarding del operador (una vez)
 
+Guía detallada paso a paso, con comandos: [ONBOARDING.md](ONBOARDING.md).
+
 Cada fila desbloquea un publisher. Hasta que exista el secret, la red queda `enabled: false` en `verticals/tech.yaml` y su contenido va al pack con caption lista para pegar.
 
 | # | Cuenta / app | Acción | Secret (GitHub → Settings → Secrets → Actions) |

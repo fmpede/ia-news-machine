@@ -13,8 +13,8 @@ brand:
   site_url: https://fmpede.github.io/ia-news-machine
   corrections_email: correcciones@sintia.news
   handles:
-    es: {bluesky: sintia-es.bsky.social, mastodon: "@sintia_es@mastodon.social", telegram: "@sintia_es", x: "@sintia_es", threads: "@sintia_es", instagram: "@sintianews", youtube: "@sintia_es", tiktok: "@sintia_es"}
-    en: {bluesky: sintia-en.bsky.social, mastodon: "@sintia_en@mastodon.social", telegram: "@sintia_en", x: "@sintia_en", threads: "@sintia_en", instagram: "@sintianews_en", youtube: "@sintia_en", tiktok: "@sintia_en"}
+    es: {bluesky: sintia-es.bsky.social, mastodon: "@sintia_es@mastodon.social", telegram: "@sintia_es", x: "@sintia_es", threads: "@sintianews", instagram: "@sintianews", youtube: "@sintia_es", tiktok: "@sintia_es"}
+    en: {bluesky: sintia-en.bsky.social, mastodon: "@sintia_en@mastodon.social", telegram: "@sintia_en", x: "@sintia_en", threads: "@sintianews_en", instagram: "@sintianews_en", youtube: "@sintia_en", tiktok: "@sintia_en"}
   colors: {bg: "#0B0F19", fg: "#F8FAFC", accent: "#22D3EE", muted: "#94A3B8"}
   fonts: {title: assets/fonts/Inter.ttf, body: assets/fonts/Inter.ttf}   # fuente variable OFL; images.py usa set_variation_by_name("Bold"/"Regular")
   logo: assets/logo/tech.png
