@@ -1,0 +1,42 @@
+{
+  "name": "sintia-revision-matinal",
+  "cron_expression": "0 11 * * *",
+  "enabled": true,
+  "job_config": {
+    "ccr": {
+      "environment_id": "env_01SpEkWwpstbDpViFuEHJCdy",
+      "session_context": {
+        "model": "claude-sonnet-5",
+        "sources": [
+          {
+            "git_repository": {
+              "url": "https://github.com/fmpede/ia-news-machine"
+            }
+          }
+        ],
+        "allowed_tools": [
+          "Bash",
+          "Read",
+          "Write",
+          "Edit",
+          "Glob",
+          "Grep"
+        ]
+      },
+      "events": [
+        {
+          "data": {
+            "uuid": "91c8a159-cea2-49cc-8d13-f39b16725af7",
+            "session_id": "",
+            "type": "user",
+            "parent_tool_use_id": null,
+            "message": {
+              "role": "user",
+              "content": "Sos la revisión matinal de Sintia, un medio de noticias operado por IA. El repo está clonado en el directorio actual. No cambies archivos.\n\nCargá state/tech.sql en sqlite3 (:memory:, executescript). Para date = hoy en America/Buenos_Aires: listá publish_log, los outputs con qa_status='blocked' y sus motivos (qa_json), y las filas de runs con status distinto de 'ok'. Leé el texto del post ES y EN del hero (selected.role='hero', outputs.format='post').\n\nEnviá exactamente 5 líneas por Telegram (POST https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage, chat_id=$TELEGRAM_OPERATOR_CHAT_ID):\n1) posts publicados por red; 2) ítems bloqueados o empaquetados que el operador debe resolver, con la carpeta del pack; 3) una oración sobre la calidad del hero (¿tiene ángulo propio, atribución, sin hype?); 4) problemas de proveedores o cupos; 5) una sugerencia concreta o \"nada que hacer\".\nSi detectás un post publicado con un problema legal (afirmación sobre una persona sin fuente, cita larga, dato inventado), decilo en la línea 2 con la URL y el comando exacto para borrarlo; el borrado lo decide el operador.\n"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
