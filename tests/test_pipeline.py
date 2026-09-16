@@ -39,7 +39,8 @@ def vertical(monkeypatch, tmp_path):
     monkeypatch.setattr(llm, "complete", fake_complete)
     monkeypatch.setattr(select, "fetch_body", lambda url, summary="", limit=0: "cuerpo: GPT-6 duplica la velocidad de respuesta, dijo OpenAI.")
     monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
-    monkeypatch.setattr(images, "generate", lambda cfg, prompt, size, out, providers=None: images.generate(cfg, prompt, size, out, providers=[]))
+    gen = images.generate   # sin proveedores externos → tarjeta degradé
+    monkeypatch.setattr(images, "generate", lambda cfg, prompt, size, out, providers=None: gen(cfg, prompt, size, out, providers=[]))
     monkeypatch.setattr(tts, "speak", lambda cfg, text, lang, out: (None, None))   # sin voz → el video se bloquea, el día sigue
     db.connect("_test")
     db.CONN.execute("INSERT INTO stories (vertical,url,url_hash,title,summary,source,source_weight,lang,points,published_at,fetched_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
