@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page_title }}</title>
+<meta name="description" content="{{ meta_description }}">
+{% if robots_meta %}<meta name="robots" content="{{ robots_meta }}">
+{% endif %}
+{% if canonical %}<link rel="canonical" href="{{ canonical }}">
+{% endif %}
+{% for alt_lang, alt_href in alternates %}
+<link rel="alternate" hreflang="{{ alt_lang }}" href="{{ alt_href }}">
+{% endfor %}
+<script type="application/ld+json">{{ org_jsonld | safe }}</script>
+{% block jsonld %}{% endblock %}
+<style>
+:root{--bg:{{ brand.colors.bg }};--fg:{{ brand.colors.fg }};--accent:{{ brand.colors.accent }};--muted:{{ brand.colors.muted }};}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--fg);}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;overflow-x:hidden;padding-bottom:64px;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+img{max-width:100%;display:block;border-radius:8px;}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px;}
+.site-header{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid #ffffff1a;}
+.brand{font-weight:700;font-size:1.25rem;color:var(--fg);}
+.langs a{margin-left:12px;color:var(--muted);font-size:.9rem;}
+.langs a.active{color:var(--accent);}
+main{max-width:720px;margin:0 auto;padding:16px;}
+h1{font-size:1.6rem;line-height:1.25;margin:8px 0 12px;}
+h2{font-size:1.25rem;margin:24px 0 8px;}
+h3{font-size:1.05rem;margin:16px 0 6px;}
+p{margin:0 0 14px;}
+ul{margin:0 0 14px 20px;}
+table{border-collapse:collapse;width:100%;margin:0 0 14px;display:block;overflow-x:auto;white-space:nowrap;}
+th,td{border:1px solid #ffffff2a;padding:6px 10px;text-align:left;}
+.box{background:#ffffff0d;border:1px solid #ffffff1a;border-radius:10px;padding:14px 16px;margin:0 0 18px;}
+.box h2,.box h3{margin-top:0;}
+.cta{background:var(--accent);color:#0a0a0a;border-radius:10px;padding:14px 16px;margin:0 0 18px;font-weight:600;text-align:center;}
+.cta a{color:#0a0a0a;display:block;}
+.byline{color:var(--muted);font-size:.85rem;margin-bottom:12px;}
+.card{display:block;padding:14px 0;border-bottom:1px solid #ffffff14;}
+.card .badge{color:var(--accent);font-size:.75rem;margin-right:6px;}
+.card h3{margin:0 0 4px;font-size:1.05rem;}
+.card p{color:var(--muted);font-size:.9rem;margin:0;}
+.cols{display:flex;flex-direction:column;gap:24px;}
+@media (min-width:768px){.cols{flex-direction:row;}.cols>div{flex:1;}}
+.related{display:flex;flex-direction:column;gap:8px;}
+.share{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px;}
+.share a,.share button{background:#ffffff0d;border:1px solid #ffffff2a;color:var(--fg);border-radius:8px;padding:8px 12px;font-size:.85rem;cursor:pointer;}
+.pager{display:flex;justify-content:space-between;margin-top:24px;}
+.site-footer{max-width:720px;margin:0 auto;padding:16px;color:var(--muted);font-size:.8rem;}
+.sticky-cta{display:none;}
+@media (max-width:767px){
+.sticky-cta{display:block;position:sticky;bottom:0;background:var(--accent);text-align:center;padding:12px 16px;}
+.sticky-cta a{color:#0a0a0a;font-weight:600;}
+}
+#cookie-banner{position:fixed;bottom:0;left:0;right:0;background:#000000cc;padding:12px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;z-index:10;}
+#cookie-banner button{border-radius:8px;border:1px solid #ffffff40;background:var(--accent);color:#0a0a0a;padding:6px 14px;}
+#cookie-banner button.reject{background:transparent;color:var(--fg);}
+</style>
+</head>
+<body>
+<header class="site-header">
+<a class="brand" href="{{ home_href }}">{{ brand.name }}</a>
+<nav class="langs">
+{% for n in nav %}<a href="{{ n.href }}" {% if n.code == lang %}class="active"{% endif %}>{{ n.label }}</a>
+{% endfor %}
+</nav>
+</header>
+<main>
+{% block content %}{% endblock %}
+</main>
+<footer class="site-footer">
+<p>{{ disclosure_bio }} <a href="{{ terms_href }}">{{ t.terms }}</a></p>
+</footer>
+{% block sticky %}{% endblock %}
+{% if ga4_id %}
+<div id="cookie-banner">
+<span>Usamos cookies para analítica. / We use cookies for analytics.</span>
+<button onclick="window.__gaAccept()">{{ 'Aceptar' if lang == 'es' else 'Accept' }}</button>
+<button class="reject" onclick="document.getElementById('cookie-banner').remove()">{{ 'Rechazar' if lang == 'es' else 'Reject' }}</button>
+</div>
+<script>
+window.__gaAccept=function(){try{localStorage.setItem('ga_consent','1');var s=document.createElement('script');
+s.src='https://www.googletagmanager.com/gtag/js?id={{ ga4_id }}';document.head.appendChild(s);window.dataLayer=window.dataLayer||[];
+window.gtag=function(){window.dataLayer.push(arguments);};window.gtag('js',new Date());window.gtag('config','{{ ga4_id }}');}catch(e){}
+var b=document.getElementById('cookie-banner');if(b)b.remove();};
+try{if(localStorage.getItem('ga_consent')==='1'){window.__gaAccept();}}catch(e){}
+</script>
+{% endif %}
+</body>
+</html>

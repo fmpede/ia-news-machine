@@ -2,7 +2,7 @@
 import json, shutil
 import pytest
 import yaml
-from newsmachine import config, db, llm, rank, select, write, qa, publish, run
+from newsmachine import config, db, llm, rank, select, write, qa, media, images, tts, publish, run
 
 DATE, STORY_URL = "2026-01-01", "https://example.com/news/gpt-6"
 FAKE_WRITE = {
@@ -39,6 +39,8 @@ def vertical(monkeypatch, tmp_path):
     monkeypatch.setattr(llm, "complete", fake_complete)
     monkeypatch.setattr(select, "fetch_body", lambda url, summary="", limit=0: "cuerpo: GPT-6 duplica la velocidad de respuesta, dijo OpenAI.")
     monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+    monkeypatch.setattr(images, "generate", lambda cfg, prompt, size, out, providers=None: images.generate(cfg, prompt, size, out, providers=[]))
+    monkeypatch.setattr(tts, "speak", lambda cfg, text, lang, out: (None, None))   # sin voz → el video se bloquea, el día sigue
     db.connect("_test")
     db.CONN.execute("INSERT INTO stories (vertical,url,url_hash,title,summary,source,source_weight,lang,points,published_at,fetched_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                     ("_test", STORY_URL, "h1", "OpenAI launches GPT-6", "GPT-6 duplica la velocidad", "Test Source", 1.0, "en", 500, db.utcnow(), db.utcnow()))
@@ -60,6 +62,10 @@ def test_pipeline_end_to_end(vertical):
     assert {"post", "thread", "carousel", "card", "video", "article", "illustration"} <= fmts
     qa.main(a)
     assert {r["qa_status"] for r in db.CONN.execute("SELECT qa_status FROM outputs")} == {"pass"}
+    media.main(a + ["--dry-run"])
+    files = {r["format"]: r["file_path"] for r in db.CONN.execute("SELECT format, file_path FROM outputs WHERE lang='es' AND file_path IS NOT NULL")}
+    assert {"illustration", "card", "carousel"} <= set(files) and all(config.ROOT.joinpath(f).exists() for f in files.values())
+    assert db.CONN.execute("SELECT qa_status FROM outputs WHERE lang='es' AND format='video'").fetchone()["qa_status"] == "blocked"
     publish.main(a + ["--dry-run"])
     rows = db.CONN.execute("SELECT network, status FROM publish_log WHERE lang='es'").fetchall()
     assert rows and all(r["status"] in ("packed", "skipped") for r in rows)

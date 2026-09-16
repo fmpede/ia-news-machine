@@ -3,7 +3,7 @@ __pycache__/
 *.pyc
 .env
 out/
-site/
+/site/
 *.sqlite
 .pytest_cache/
 .DS_Store

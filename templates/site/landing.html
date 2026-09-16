@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "_card.html" import card %}
+{% block content %}
+<h1>{{ h1 }}</h1>
+<p>{{ brand.tagline.es }} / {{ brand.tagline.en }}</p>
+<div class="cols">
+{% for col in columns %}
+<div>
+<h2>{{ col.label }}</h2>
+{% for art in col.articles %}{{ card(art) }}{% endfor %}
+{% if not col.articles %}<p class="byline">{{ 'Sin artículos todavía.' if col.lang == 'es' else 'No articles yet.' }}</p>{% endif %}
+<p><a href="{{ col.more_href }}">{{ col.t.read_more }} →</a></p>
+</div>
+{% endfor %}
+</div>
+{% endblock %}

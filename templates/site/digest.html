@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ h1 }}</h1>
+{% for art in articles %}
+<article class="box">
+{% if art.image %}<img src="{{ art.image.url }}" alt="{{ art.image.alt }}" loading="lazy">
+{% endif %}
+<h2>{{ art.title }}</h2>
+<p>{{ art.post or art.meta_description }}</p>
+<p><a href="{{ art.href }}">{{ t.read_more }} →</a></p>
+</article>
+{% endfor %}
+{% if not articles %}<p class="byline">{{ 'Sin artículos este día.' if lang == 'es' else 'No articles this day.' }}</p>{% endif %}
+{% endblock %}

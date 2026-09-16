@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% from "_card.html" import card %}
+{% block jsonld %}
+<script type="application/ld+json">{{ article_jsonld | safe }}</script>
+{% if faq_jsonld %}<script type="application/ld+json">{{ faq_jsonld | safe }}</script>
+{% endif %}
+{% endblock %}
+{% block content %}
+<h1>{{ h1 }}</h1>
+<p class="byline">{{ date }} · {{ source }}</p>
+{% if image %}<img src="{{ image.url }}" alt="{{ image.alt }}">
+{% endif %}
+{{ lead_html | safe }}
+<div class="box">
+<h2>{{ t.tldr }}</h2>
+<p>{{ tldr }}</p>
+</div>
+{% if telegram_href %}
+<div class="cta"><a href="{{ telegram_href }}" rel="noopener" target="_blank">{{ t.telegram_cta }}</a></div>
+{% endif %}
+{{ body_html | safe }}
+<div class="box">
+<h2>{{ t.source }}</h2>
+<p><a href="{{ source_url }}" rel="noopener" target="_blank">{{ source }}</a></p>
+{% if claims %}
+<h3>{{ t.source_says }}</h3>
+{% for c in claims %}
+<p><strong>{{ c.claim }}</strong><br>"{{ c.quote }}"
+{% if c.source_url %}— <a href="{{ c.source_url }}" rel="noopener" target="_blank">{{ t.source }}</a>{% endif %}</p>
+{% endfor %}
+{% endif %}
+</div>
+{% if faq %}
+<h2>{{ t.faq }}</h2>
+{% for q in faq %}
+<h3>{{ q.q }}</h3>
+<p>{{ q.a }}</p>
+{% endfor %}
+{% endif %}
+{% if related %}
+<h2>{{ t.related }}</h2>
+<div class="related">
+{% for art in related %}{{ card(art) }}{% endfor %}
+</div>
+{% endif %}
+<h2>{{ t.share }}</h2>
+<div class="share">
+<button id="share-btn" type="button">{{ t.share }}</button>
+<a href="{{ share.x }}" rel="noopener" target="_blank">X</a>
+<a href="{{ share.whatsapp }}" rel="noopener" target="_blank">WhatsApp</a>
+<a href="{{ share.telegram }}" rel="noopener" target="_blank">Telegram</a>
+</div>
+<script>
+(function(){var b=document.getElementById('share-btn');if(!b)return;
+if(navigator.share){b.onclick=function(){navigator.share({title:document.title,url:location.href}).catch(function(){});};}
+else{b.style.display='none';}})();
+</script>
+{% endblock %}
+{% block sticky %}
+{% if telegram_href %}
+<div class="sticky-cta"><a href="{{ telegram_href }}" rel="noopener" target="_blank">{{ t.telegram_cta }}</a></div>
+{% endif %}
+{% endblock %}
