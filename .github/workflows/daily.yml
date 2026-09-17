@@ -2,6 +2,7 @@ name: daily
 on:
   schedule:
     - cron: "15 9 * * *"            # 06:15 America/Buenos_Aires; publica antes de las 07:00
+    - cron: "0 10 * * *"            # reintento 07:00 ART por si GitHub saltea el primero (todas las etapas son idempotentes)
   workflow_dispatch:
     inputs:
       vertical: {description: "vertical", default: "tech"}

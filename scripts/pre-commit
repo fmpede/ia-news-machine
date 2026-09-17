@@ -1,7 +1,8 @@
 #!/bin/sh
 # Bloquea commits con credenciales. Instalar: ln -sf ../../scripts/pre-commit .git/hooks/pre-commit
 PAT='sk-ant-[A-Za-z0-9_-]{10,}|AIza[0-9A-Za-z_-]{20,}|gsk_[0-9A-Za-z]{20,}|gh[pousr]_[0-9A-Za-z]{20,}|bot[0-9]{6,}:[A-Za-z0-9_-]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
-if git diff --cached --name-only -z | grep -zvE '\.(ttf|png|jpg|mp3|mp4)$' | xargs -0 grep -nIE "$PAT" 2>/dev/null; then
+if git grep -nIE "$PAT" --cached -- . ':(exclude)*.ttf' ':(exclude)*.png' ':(exclude)*.jpg' ':(exclude)*.mp3' ':(exclude)*.mp4'; then
   echo "✋ commit bloqueado: parece haber una credencial en los archivos de arriba"; exit 1
 fi
 if git diff --cached --name-only | grep -qx '.env'; then echo "✋ commit bloqueado: .env nunca se versiona"; exit 1; fi
+exit 0
