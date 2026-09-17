@@ -10,6 +10,7 @@ on:
       from:     {description: "etapa inicial", default: "ingest"}
       to:       {description: "etapa final", default: "site"}
       dry_run:  {description: "no publicar (todo va al pack)", type: boolean, default: false}
+      force:    {description: "rehacer etapas aunque ya tengan resultado", type: boolean, default: false}
 concurrency: {group: state, cancel-in-progress: false}
 permissions: {contents: write, pages: write, id-token: write}
 jobs:
@@ -65,13 +66,14 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12", cache: pip}
       - run: pip install -r requirements.txt
-      - run: ffmpeg -version | head -1
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null && ffprobe -version | head -1   # ffmpeg completo: ffprobe + libass
       - name: pipeline
         run: >
           python -m newsmachine.run --vertical ${{ inputs.vertical || matrix.vertical }}
           --from ${{ inputs.from || 'ingest' }} --to ${{ inputs.to || 'site' }}
           ${{ inputs.date && format('--date {0}', inputs.date) || '' }}
           ${{ inputs.dry_run && '--dry-run' || '' }}
+          ${{ inputs.force && '--force' || '' }}
       - name: sitio (siempre, aunque el pipeline haya fallado antes)
         if: always()
         run: python -m newsmachine.site --vertical ${{ inputs.vertical || matrix.vertical }}
