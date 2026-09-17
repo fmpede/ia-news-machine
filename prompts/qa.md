@@ -15,7 +15,7 @@ Decisión:
 - "fix": solo problemas de forma (disclosure, atribución, cita larga, palabra prohibida, un dato menor corregible con la fuente). Devolvé en fixed_outputs TODOS los formatos recibidos, completos, con las correcciones aplicadas y nada más cambiado.
 - "block": cualquier afirmación no respaldada de fondo, tema sensible sobre personas, o duda razonable. Ante la duda, block.
 
-Devolvé JSON con: verdict, issues (lista de {format, type, text, fix}) y fixed_outputs (objeto con los mismos formatos recibidos; si verdict no es "fix", devolvé un objeto vacío {}).
+Devolvé JSON con: verdict, issues (lista de {format, type, text, fix}) y fixed_outputs: un STRING que contiene el JSON del objeto con los mismos formatos recibidos y las correcciones aplicadas (si verdict no es "fix", el string "{}").
 
 Fuente ($story_url):
 $story_body

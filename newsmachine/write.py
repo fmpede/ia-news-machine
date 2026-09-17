@@ -1,5 +1,6 @@
 """Etapa 5: por (historia, idioma) genera todos los formatos en una llamada JSON."""
 import datetime as dt, json
+from urllib.parse import urlparse
 from . import db, llm
 from .config import parse, prompt
 
@@ -20,18 +21,25 @@ LANG_NAMES = {"es": "español rioplatense", "en": "English"}
 LINK_NETWORKS = {"bluesky", "mastodon", "telegram", "threads", "linkedin"}  # reciben la URL de la fuente al final del post
 
 
-def post_limit(cfg, lang):
-    """Límite del post = el más chico entre las redes habilitadas que reciben 'post' (menos margen para la URL)."""
+def post_limit(cfg, lang, url=""):
+    """Límite del post = el más chico entre las redes habilitadas que reciben 'post', descontando la URL real en las que la llevan."""
     lims = []
     for net, n in cfg["networks"].get(lang, {}).items():
         if n.get("enabled") and "post" in n.get("formats", []):
             lim = cfg["editorial"]["network_limits"].get(net, 500)
-            lims.append(lim - 60 if net in LINK_NETWORKS else lim)
-    return min(lims) if lims else 280
+            lims.append(lim - (len(url) + 1) if net in LINK_NETWORKS else lim)
+    return max(120, min(lims) if lims else 280)
 
 
 def source_name(story):
-    return story["source"].split("/")[-1]
+    """Nombre citable: el medio (Google News/<medio>), o el dominio del link para agregadores (Hacker News, GitHub, arXiv)."""
+    src = story["source"]
+    if src.startswith("Google News/"):
+        return src.split("/", 1)[1].replace("www.", "")
+    if src in ("Hacker News", "GitHub", "arXiv"):
+        host = urlparse(story["url"]).netloc.replace("www.", "")
+        return {"github.com": "GitHub", "arxiv.org": "arXiv"}.get(host, host) if host else src
+    return src
 
 
 def save_outputs(cfg, date, story, lang, out, role, model):
@@ -67,7 +75,7 @@ def main(argv=None):
             p = prompt(cfg, "lesson" if cfg["mode"] == "course" else "write", brand_name=cfg["brand"]["name"], lang_name=LANG_NAMES.get(lang, lang), audience=cfg["audience"][lang],
                        tone=cfg["tone"][lang], angle=angle, editorial_rules=rules, max_quote_words=cfg["editorial"]["locked"]["max_quote_words"],
                        banned_words=", ".join(cfg["editorial"]["banned_words"].get(lang, [])), story_url=story["url"],
-                       source_name=source_name(story), post_limit=post_limit(cfg, lang), disclosure=cfg["brand"]["disclosure"][lang],
+                       source_name=source_name(story), post_limit=post_limit(cfg, lang, story["url"]), disclosure=cfg["brand"]["disclosure"][lang],
                        hashtags=" ".join(cfg["editorial"]["hashtags"].get(lang, [])), thread_max=cfg["formats"]["post"]["thread_max"],
                        carousel_slides=cfg["formats"]["image"]["carousel_slides"], video_max_words=cfg["formats"]["video"]["max_words"],
                        article_min_words=art["min_words"] * (2 if hero else 1), article_max_words=art["max_words"] * (2 if hero else 1),
@@ -76,6 +84,9 @@ def main(argv=None):
                        related_json=json.dumps([dict(r) for r in related], ensure_ascii=False) if related else "(ninguna)")
             try:
                 out = llm.complete(p, json_schema=SCHEMA, tier="quality" if hero else "cheap", max_tokens=12000)
+                if not out["claims"]:  # sin claims no hay pieza publicable: un reintento con la instrucción reforzada
+                    out = llm.complete(p + "\n\nIMPORTANTE: 'claims' no puede estar vacía; incluí al menos 3 con cita textual del texto fuente.",
+                                       json_schema=SCHEMA, tier="quality" if hero else "cheap", max_tokens=12000)
                 out["_angle"] = angle
                 save_outputs(cfg, args.date, story, lang, out, story["role"], "quality" if hero else "cheap")
                 done += 1

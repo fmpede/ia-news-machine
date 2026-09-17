@@ -37,7 +37,7 @@ def vertical(monkeypatch, tmp_path):
     cfg["name"] = "_test"
     (config.ROOT / "verticals" / "_test.yaml").write_text(yaml.safe_dump(cfg, allow_unicode=True))
     monkeypatch.setattr(llm, "complete", fake_complete)
-    monkeypatch.setattr(select, "fetch_body", lambda url, summary="", limit=0: "cuerpo: GPT-6 duplica la velocidad de respuesta, dijo OpenAI.")
+    monkeypatch.setattr(select, "fetch_body", lambda url, summary="", limit=0: "cuerpo: GPT-6 duplica la velocidad de respuesta, dijo OpenAI. " * 8)  # ≥ MIN_BODY
     monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
     gen = images.generate   # sin proveedores externos → tarjeta degradé
     monkeypatch.setattr(images, "generate", lambda cfg, prompt, size, out, providers=None: gen(cfg, prompt, size, out, providers=[]))

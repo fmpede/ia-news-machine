@@ -401,6 +401,12 @@ def build(cfg, out=None):
             "pages": sum(pages.values())}
 
 
+def main(argv=None):
+    from .config import parse
+    cfg, args = parse(argv)
+    print(f"vertical={cfg['name']} {build(cfg)}")
+
+
 if __name__ == "__main__":
     cfg, args = config.parse()
     counts = build(cfg)

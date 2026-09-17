@@ -14,7 +14,7 @@ SCHEMA = {"type": "object", "properties": {
     "verdict": {"type": "string", "enum": ["pass", "fix", "block"]},
     "issues": {"type": "array", "items": {"type": "object", "properties": {"format": {"type": "string"}, "type": {"type": "string"},
         "text": {"type": "string"}, "fix": {"type": "string"}}, "required": ["format", "type", "text", "fix"], "additionalProperties": False}},
-    "fixed_outputs": {"type": "object", "additionalProperties": True}},
+    "fixed_outputs": {"type": "string", "description": "JSON (como texto) del objeto con los formatos corregidos, o \"{}\" si verdict no es fix"}},
     "required": ["verdict", "issues", "fixed_outputs"], "additionalProperties": False}
 
 
@@ -106,7 +106,11 @@ def review(cfg, date, story, lang, rows):
     if verdict == "block":
         return "blocked", qa, outputs
     if verdict == "fix" or issues:
-        fixed = {**outputs, **{k: v for k, v in out["fixed_outputs"].items() if k in outputs}} if verdict == "fix" else outputs
+        try:
+            fo = out["fixed_outputs"] if isinstance(out["fixed_outputs"], dict) else json.loads(out["fixed_outputs"] or "{}")
+        except ValueError:
+            return "blocked", {**qa, "error": "fixed_outputs no es JSON"}, outputs
+        fixed = {**outputs, **{k: v for k, v in fo.items() if k in outputs}} if verdict == "fix" else outputs
         left = check_rules(cfg, lang, story, fixed)
         if left:
             return "blocked", {**qa, "left": [list(i) for i in left]}, outputs
