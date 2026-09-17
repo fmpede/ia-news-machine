@@ -6,14 +6,14 @@ from .config import parse, load_vertical
 STAGES = ["ingest", "cluster", "rank", "select", "write", "qa", "media", "publish", "site", "metrics"]
 
 
-def report(cfg, date):
+def report(cfg, date, since=""):
     """5 líneas: publicado por red, packs/bloqueos, fallos, cupos, sitio."""
     q = lambda sql, *a: db.CONN.execute(sql, a).fetchall()
     pub = q("SELECT network, status, count(*) c FROM publish_log WHERE vertical=? AND date=? GROUP BY network, status", cfg["name"], date)
     ok = ", ".join(f"{r['network']}:{r['c']}" for r in pub if r["status"] == "ok") or "nada"
     packed = sum(r["c"] for r in pub if r["status"] in ("packed", "failed"))
     blocked = q("SELECT count(DISTINCT story_id||lang) c FROM outputs WHERE vertical=? AND date=? AND qa_status='blocked'", cfg["name"], date)[0]["c"]
-    fails = q("SELECT stage, detail FROM runs WHERE vertical=? AND date=? AND status IN ('failed','warn') ORDER BY at DESC LIMIT 3", cfg["name"], date)
+    fails = q("SELECT stage, detail FROM runs WHERE vertical=? AND date=? AND status IN ('failed','warn') AND at>=? ORDER BY at DESC LIMIT 3", cfg["name"], date, since)
     quota = ", ".join(f"{r['provider']}:{r['calls']}" for r in q("SELECT provider, calls FROM quota WHERE day=?", db.utcnow()[:10]))
     lines = [f"📰 {cfg['brand']['name']} {date}", f"✅ Publicado: {ok}", f"📦 Packs/fallos: {packed} · 🚫 Bloqueados por QA: {blocked}",
              "⚠️ " + (" | ".join(f"{r['stage']}: {r['detail'][:80]}" for r in fails) if fails else "sin fallos"),
@@ -26,6 +26,7 @@ def main(argv=None):
         ap.add_argument("--from", dest="start", default="ingest"); ap.add_argument("--to", dest="end", default="site")
         ap.add_argument("--network", default="")
     cfg, args = parse(argv, extra)
+    started = db.utcnow()  # el reporte solo muestra avisos de esta corrida
     todo = STAGES[STAGES.index(args.start):STAGES.index(args.end) + 1]
     if cfg["mode"] == "course":
         todo = [s for s in todo if s != "cluster"]
@@ -43,7 +44,7 @@ def main(argv=None):
                 from .publishers import telegram_send
                 telegram_send(f"❌ {cfg['brand']['name']} {args.date}: falló {stage}: {e}"); sys.exit(1)
     db.connect(cfg["name"])
-    msg = report(cfg, args.date)
+    msg = report(cfg, args.date, started)
     print(msg)
     if "publish" in todo:
         from .publishers import telegram_send
