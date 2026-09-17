@@ -207,6 +207,13 @@ def publish_bluesky(cfg, net, lang, story, outputs):
     r.raise_for_status()
     data = r.json()
     rkey = data["uri"].rsplit("/", 1)[-1]
+    if story["url"]:  # el link a la fuente va como respuesta: no come caracteres del post y no compite con la imagen
+        label = "Fuente" if lang == "es" else "Source"
+        reply_text = f"{label}: {story['url']}"
+        reply = {"$type": "app.bsky.feed.post", "text": reply_text, "createdAt": _now_iso(), "langs": [lang],
+                 "facets": facets(reply_text), "reply": {"root": {"uri": data["uri"], "cid": data["cid"]}, "parent": {"uri": data["uri"], "cid": data["cid"]}}}
+        requests.post("https://bsky.social/xrpc/com.atproto.repo.createRecord", headers=headers,
+                      json={"repo": session["did"], "collection": "app.bsky.feed.post", "record": reply}, timeout=TIMEOUT).raise_for_status()
     return {"post_id": data["uri"], "url": f"https://bsky.app/profile/{handle}/post/{rkey}"}
 
 

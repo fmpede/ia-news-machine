@@ -15,8 +15,8 @@ OPENAI_COMPAT = {  # nombre: (base_url, env key, modelo) — hablan /chat/comple
 GEMINI = {"gemini": ("GEMINI_API_KEY", "gemini-3.8-flash"), "gemini_lite": ("GEMINI_API_KEY", "gemini-3.5-flash-lite")}  # nativo; clave en header, nunca en la URL (2.5 ya no existe para cuentas nuevas)
 CLAUDE = {"haiku": "claude-haiku-4-5", "sonnet": "claude-sonnet-5"}
 # ponytail: llamadas/día ~20% debajo del cupo publicado (2026-09); ajustar si un proveedor cambia su tier.
-LIMITS = {"gemini": 200, "gemini_lite": 300, "groq": 800, "haiku": 400, "sonnet": 40}
-TIERS = {"cheap": ["gemini", "gemini_lite", "groq", "haiku"], "quality": ["sonnet", "haiku"], "qa": ["haiku", "sonnet"]}
+LIMITS = {"gemini": 200, "gemini_lite": 300, "groq": 800, "haiku": 400, "sonnet": 80}
+TIERS = {"cheap": ["gemini", "gemini_lite", "groq", "haiku"], "quality": ["sonnet", "haiku"], "qa": ["sonnet", "haiku"]}  # el juez importa más que el redactor: Sonnet primero (~US$0.35/día)
 
 
 def complete(prompt, system="", json_schema=None, tier="cheap", max_tokens=8000):
@@ -94,6 +94,8 @@ def _parse(text, schema):
         return text
     text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.M)
     data = json.loads(text)
+    if schema.get("type") == "object" and not isinstance(data, dict):
+        raise ValueError(f"se esperaba un objeto JSON, llegó {type(data).__name__}")
     missing = [k for k in schema.get("required", []) if k not in data] if isinstance(data, dict) else []
     if missing:
         raise ValueError(f"faltan claves {missing}")

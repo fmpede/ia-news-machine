@@ -1,8 +1,9 @@
 """Etapa 7: checks determinísticos + veredicto LLM (Haiku → Sonnet). Ante la duda, bloquea."""
 import json, re
+from urllib.parse import urlparse
 from . import db, llm
 from .config import parse, prompt
-from .write import LINK_NETWORKS, source_name
+from .write import url_cost, source_name
 
 SENSITIVE = {"es": ["salud", "enferm", "cáncer", "hospital", "internad", "embaraz", "gay", "lesbian", "sexual", "trans ",
                     "delito", "denunci", "detenid", "preso", "condena", "estafa", "adic", "droga", "alcohol", "rehab", "muri", "muert", "falleci", "suicid"],
@@ -49,7 +50,7 @@ def check_rules(cfg, lang, story, outputs):
         issues.append(("thread", "missing_disclosure", "último mensaje"))
     for net, n in cfg["networks"].get(lang, {}).items():
         if not n.get("enabled"): continue
-        lim = ed["network_limits"].get(net, 500) - (len(story["url"]) + 1 if net in LINK_NETWORKS else 0)
+        lim = ed["network_limits"].get(net, 500) - url_cost(net, story["url"])
         for fmt in ("post", "thread"):
             if fmt in n.get("formats", []) and fmt in outputs:
                 for t in ([outputs["post"]["text"]] if fmt == "post" else outputs["thread"]["items"]):
@@ -94,17 +95,26 @@ def review(cfg, date, story, lang, rows):
     hard = [i for i in issues if i[1] in ("people_sensitive", "hold", "bad_source_url", "no_claims", "real_person")]
     if hard:
         return "blocked", {"issues": [list(i) for i in issues], "stage": "rules"}, outputs
-    try:
-        out = llm.complete(prompt(cfg, "qa", brand_name=cfg["brand"]["name"], lang_name=lang, story_url=story["url"],
+    qa_prompt = prompt(cfg, "qa", brand_name=cfg["brand"]["name"], lang_name=lang, story_url=story["url"],
                                   story_body=(story["body"] or story["summary"] or "")[:6000], outputs_json=json.dumps(outputs, ensure_ascii=False),
-                                  locked_rules="\n".join(f"- {k}: {v}" for k, v in cfg["editorial"]["locked"].items()),
-                                  max_quote_words=cfg["editorial"]["locked"]["max_quote_words"], disclosure=cfg["brand"]["disclosure"][lang]),
-                           json_schema=SCHEMA, tier="qa", max_tokens=12000)
+                                  source_name=source_name(story), source_domain=urlparse(story["url"]).netloc.replace("www.", ""),
+                                  max_quote_words=cfg["editorial"]["locked"]["max_quote_words"], disclosure=cfg["brand"]["disclosure"][lang])
+    try:
+        out = llm.complete(qa_prompt, json_schema=SCHEMA, tier="qa", max_tokens=12000)
     except Exception as e:
         return "blocked", {"issues": [list(i) for i in issues], "error": db.redact(e)[:300], "stage": "llm"}, outputs
     verdict, qa = out["verdict"], {"issues": [list(i) for i in issues] + out["issues"], "stage": "llm"}
     if verdict == "block":
         return "blocked", qa, outputs
+    if verdict == "pass" and issues:  # el juez no vio los problemas de forma detectados por reglas: se los pedimos explícitamente
+        try:
+            out = llm.complete(qa_prompt + "\n\nEl sistema detectó estos problemas de forma que DEBÉS corregir con verdict \"fix\" (no bloquees por esto): "
+                               + json.dumps([list(i) for i in issues], ensure_ascii=False), json_schema=SCHEMA, tier="qa", max_tokens=12000)
+            verdict = out["verdict"]
+        except Exception as e:
+            return "blocked", {**qa, "error": db.redact(e)[:300]}, outputs
+        if verdict == "block":
+            return "blocked", {**qa, "issues": qa["issues"] + out["issues"]}, outputs
     if verdict == "fix" or issues:
         try:
             fo = out["fixed_outputs"] if isinstance(out["fixed_outputs"], dict) else json.loads(out["fixed_outputs"] or "{}")

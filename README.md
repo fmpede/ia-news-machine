@@ -97,7 +97,7 @@ Copiá `verticals/tech.yaml` a `verticals/<nombre>.yaml`, ajustá `languages`, `
 
 ## Costos (estimado)
 
-Actions, Gemini, Groq, Cloudflare, Google TTS: US$0 · Claude API (QA + hero): ~US$4-6/mes · X pago por uso: ~US$3-4/mes · dominio: ~US$1/mes. Total ≈ US$8-12/mes.
+Actions, Gemini, Groq, Cloudflare, Google TTS: US$0 · Claude API (QA con Sonnet + hero): ~US$10-12/mes · X pago por uso: ~US$3-4/mes · dominio: ~US$1/mes. Total ≈ US$8-12/mes.
 
 ## Limitaciones conocidas
 

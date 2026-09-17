@@ -18,7 +18,14 @@ SCHEMA = obj({
     "claims": arr(obj({"claim": S, "quote": S, "source_url": S})),
 })
 LANG_NAMES = {"es": "español rioplatense", "en": "English"}
-LINK_NETWORKS = {"bluesky", "mastodon", "telegram", "threads", "linkedin"}  # reciben la URL de la fuente al final del post
+LINK_NETWORKS = {"mastodon", "telegram", "threads", "linkedin"}  # reciben la URL de la fuente al final del post; bluesky la publica como respuesta; x no lleva link
+
+
+def url_cost(net, url):
+    """Caracteres que la URL le come al post en cada red."""
+    if net not in LINK_NETWORKS:
+        return 0
+    return 24 if net == "mastodon" else len(url) + 1  # Mastodon cuenta toda URL como 23 caracteres
 
 
 def post_limit(cfg, lang, url=""):
@@ -27,7 +34,7 @@ def post_limit(cfg, lang, url=""):
     for net, n in cfg["networks"].get(lang, {}).items():
         if n.get("enabled") and "post" in n.get("formats", []):
             lim = cfg["editorial"]["network_limits"].get(net, 500)
-            lims.append(lim - (len(url) + 1) if net in LINK_NETWORKS else lim)
+            lims.append(lim - url_cost(net, url))
     return max(120, min(lims) if lims else 280)
 
 
