@@ -32,6 +32,7 @@ INSERT INTO "runs" VALUES('tech','2026-09-16','rank','warn','LLM falló, heurís
 INSERT INTO "runs" VALUES('tech','2026-09-16','rank','warn','LLM falló, heurística: todos los proveedores fallaron: ','2026-09-16T19:58:50+00:00');
 INSERT INTO "runs" VALUES('tech','2026-09-16','rank','ok','0 por LLM, 226 por heurística','2026-09-16T19:58:50+00:00');
 INSERT INTO "runs" VALUES('tech','2026-09-16','select','ok','6 historias, hero=Show HN: An e-ink frame that hears birds and draws them as 1','2026-09-16T19:58:53+00:00');
+INSERT INTO "runs" VALUES('tech','2026-09-16','metrics','ok','0 snapshots','2026-09-17T00:03:29+00:00');
 CREATE TABLE selected (
   vertical TEXT, date TEXT, story_id INTEGER REFERENCES stories(id),
   role TEXT CHECK (role IN ('hero','story')), position INTEGER,
