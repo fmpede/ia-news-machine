@@ -11,6 +11,7 @@ from pathlib import Path
 import requests
 
 from . import config
+from . import db
 
 TIMEOUT = 30
 URL_RE = re.compile(r"https?://\S+")
@@ -147,7 +148,7 @@ def telegram_send(text, files=None, chat_id=None):
             r = requests.post(f"{base}/sendMessage", data={"chat_id": chat_id, "text": text[:4096]}, timeout=TIMEOUT)
         return bool(_tg_ok(r).get("ok"))
     except Exception as e:
-        print(f"telegram_send falló: {e}")
+        print("telegram_send falló:", db.redact(e))
         return False
 
 

@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 from .config import ROOT
 from . import images, tts
+from . import db
 
 ASS_HEADER = """[Script Info]
 ScriptType: v4.00+
@@ -173,7 +174,7 @@ def build(cfg, lang, video, illustration, source, out_dir):
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode != 0 or not out_mp4.exists():
-        print(f"video: ffmpeg falló (código {proc.returncode}): {proc.stderr[-800:]}")
+        print(f"video: ffmpeg falló (código {proc.returncode}):", db.redact(proc.stderr[-800:]))
         return None
 
     final_ms = tts.duration_ms(out_mp4)

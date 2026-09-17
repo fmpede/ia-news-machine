@@ -9,24 +9,25 @@ import json, os, re, sys
 import requests
 from . import db
 
-OPENAI_COMPAT = {  # nombre: (base_url, env key, modelo) — todos hablan /chat/completions
-    "gemini": ("https://generativelanguage.googleapis.com/v1beta/openai", "GEMINI_API_KEY", "gemini-2.5-flash"),
+OPENAI_COMPAT = {  # nombre: (base_url, env key, modelo) — hablan /chat/completions
     "groq": ("https://api.groq.com/openai/v1", "GROQ_API_KEY", "openai/gpt-oss-120b"),
 }
+GEMINI = {"gemini": ("GEMINI_API_KEY", "gemini-3.8-flash"), "gemini_lite": ("GEMINI_API_KEY", "gemini-3.5-flash-lite")}  # nativo; clave en header, nunca en la URL (2.5 ya no existe para cuentas nuevas)
 CLAUDE = {"haiku": "claude-haiku-4-5", "sonnet": "claude-sonnet-5"}
 # ponytail: llamadas/día ~20% debajo del cupo publicado (2026-09); ajustar si un proveedor cambia su tier.
-LIMITS = {"gemini": 200, "groq": 800, "haiku": 400, "sonnet": 40}
-TIERS = {"cheap": ["gemini", "groq", "haiku"], "quality": ["sonnet", "haiku"], "qa": ["haiku", "sonnet"]}
+LIMITS = {"gemini": 200, "gemini_lite": 300, "groq": 800, "haiku": 400, "sonnet": 40}
+TIERS = {"cheap": ["gemini", "gemini_lite", "groq", "haiku"], "quality": ["sonnet", "haiku"], "qa": ["haiku", "sonnet"]}
 
 
 def complete(prompt, system="", json_schema=None, tier="cheap", max_tokens=8000):
     errors = []
     for name in TIERS[tier]:
-        key = os.getenv("ANTHROPIC_API_KEY" if name in CLAUDE else OPENAI_COMPAT[name][1])
+        key = os.getenv("ANTHROPIC_API_KEY" if name in CLAUDE else GEMINI[name][0] if name in GEMINI else OPENAI_COMPAT[name][1])
         if not key or (db.CONN is not None and db.quota_used(name) >= LIMITS[name]):
             continue
         try:
-            text, tokens = (_claude if name in CLAUDE else _openai)(name, key, prompt, system, json_schema, max_tokens)
+            fn = _claude if name in CLAUDE else _gemini if name in GEMINI else _openai
+            text, tokens = fn(name, key, prompt, system, json_schema, max_tokens)
             out = _parse(text, json_schema)
             if db.CONN is not None:
                 db.quota_add(name, tokens=tokens)
@@ -50,6 +51,24 @@ def _openai(name, key, prompt, system, schema, max_tokens):
     r.raise_for_status()
     j = r.json()
     return j["choices"][0]["message"]["content"], j.get("usage", {}).get("total_tokens", 0)
+
+
+def _gemini(name, key, prompt, system, schema, max_tokens):
+    model = GEMINI[name][1]
+    if schema:
+        system = f"{system}\n\nRespondé únicamente con JSON válido que cumpla este esquema:\n{json.dumps(schema, ensure_ascii=False)}"
+    body = {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {"temperature": 0.4, "maxOutputTokens": max_tokens, **({"responseMimeType": "application/json"} if schema else {})}}
+    if system:
+        body["system_instruction"] = {"parts": [{"text": system}]}
+    r = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent", json=body, timeout=180,
+                      headers={"x-goog-api-key": key})
+    r.raise_for_status()
+    j = r.json()
+    if not j.get("candidates"):
+        raise RuntimeError(f"sin candidatos: {j.get('promptFeedback')}")
+    text = "".join(p.get("text", "") for p in j["candidates"][0]["content"]["parts"])
+    return text, j.get("usageMetadata", {}).get("totalTokenCount", 0)
 
 
 def _claude(name, key, prompt, system, schema, max_tokens):
@@ -82,7 +101,8 @@ def _parse(text, schema):
 
 
 def configured():
-    return [n for n in [*OPENAI_COMPAT, *CLAUDE] if os.getenv("ANTHROPIC_API_KEY" if n in CLAUDE else OPENAI_COMPAT[n][1])]
+    env = lambda n: "ANTHROPIC_API_KEY" if n in CLAUDE else GEMINI[n][0] if n in GEMINI else OPENAI_COMPAT[n][1]
+    return [n for n in [*GEMINI, *OPENAI_COMPAT, *CLAUDE] if os.getenv(env(n))]
 
 
 if __name__ == "__main__":  # python -m newsmachine.llm --selftest : una llamada mínima por proveedor configurado

@@ -106,8 +106,8 @@ def _try_gemini(prompt):
         return None
     try:
         r = requests.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key={key}",
-            json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=120,
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent", headers={"x-goog-api-key": key},
+            json={"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"responseModalities": ["IMAGE"]}}, timeout=120,
         )
         r.raise_for_status()
         parts = r.json()["candidates"][0]["content"]["parts"]
@@ -116,7 +116,7 @@ def _try_gemini(prompt):
             db.quota_add("gemini_image")
         return Image.open(io.BytesIO(base64.b64decode(b64)))
     except Exception as e:
-        print(f"images: gemini_image falló: {e}")
+        print("images: gemini_image falló:", db.redact(e))
         if db.CONN is not None:
             db.quota_add("gemini_image", calls=0, errors=1)
         return None
@@ -135,7 +135,7 @@ def _try_cloudflare(prompt):
             db.quota_add("cloudflare")
         return Image.open(io.BytesIO(base64.b64decode(b64)))
     except Exception as e:
-        print(f"images: cloudflare falló: {e}")
+        print("images: cloudflare falló:", db.redact(e))
         if db.CONN is not None:
             db.quota_add("cloudflare", calls=0, errors=1)
         return None
@@ -153,7 +153,7 @@ def _try_pollinations(prompt, size):
             db.quota_add("pollinations")
         return Image.open(io.BytesIO(r.content))
     except Exception as e:
-        print(f"images: pollinations falló: {e}")
+        print("images: pollinations falló:", db.redact(e))
         if db.CONN is not None:
             db.quota_add("pollinations", calls=0, errors=1)
         return None

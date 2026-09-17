@@ -67,7 +67,7 @@ formats:
 
 networks:                       # publisher = clave de publishers.PUBLISHERS; env = prefijo de los secrets
   es:
-    telegram:  {enabled: true,  publisher: telegram,  chat_id: "@sintia_es",     formats: [post, image, video]}
+    telegram:  {enabled: false, publisher: telegram,  chat_id: "@sintia_es",     formats: [post, image, video]}
     bluesky:   {enabled: true,  publisher: bluesky,   env: NM_TECH_ES_BSKY,    formats: [post, image]}
     mastodon:  {enabled: true,  publisher: mastodon,  env: NM_TECH_ES_MASTO,   formats: [post, image, video], base_url: https://mastodon.social}
     x:         {enabled: false, publisher: x,         env: NM_TECH_ES_X,       formats: [post, image]}
@@ -76,7 +76,7 @@ networks:                       # publisher = clave de publishers.PUBLISHERS; en
     youtube:   {enabled: false, publisher: youtube,   env: NM_TECH_ES_YT,      formats: [video]}
     tiktok:    {enabled: false, publisher: tiktok,    env: NM_TECH_ES_TIKTOK,  formats: [video]}
   en:
-    telegram:  {enabled: true,  publisher: telegram,  chat_id: "@sintia_en",     formats: [post, image, video]}
+    telegram:  {enabled: false, publisher: telegram,  chat_id: "@sintia_en",     formats: [post, image, video]}
     bluesky:   {enabled: true,  publisher: bluesky,   env: NM_TECH_EN_BSKY,    formats: [post, image]}
     mastodon:  {enabled: true,  publisher: mastodon,  env: NM_TECH_EN_MASTO,   formats: [post, image, video], base_url: https://mastodon.social}
     x:         {enabled: false, publisher: x,         env: NM_TECH_EN_X,       formats: [post, image]}

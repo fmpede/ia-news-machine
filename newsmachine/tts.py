@@ -25,7 +25,7 @@ def _edge_tts(text, voice, out_mp3):
     try:
         return asyncio.run(_edge_tts_async(text, voice, out_mp3))
     except Exception as e:
-        print(f"tts: edge-tts falló: {e}")
+        print("tts: edge-tts falló:", db.redact(e))
         if db.CONN is not None:
             db.quota_add("edge_tts", calls=0, errors=1)
         return None
@@ -62,14 +62,14 @@ def _google_tts(text, lang, out_mp3):
             "voice": {"languageCode": "es-US" if lang == "es" else "en-US"},
             "audioConfig": {"audioEncoding": "MP3"},
         }
-        r = requests.post(f"https://texttospeech.googleapis.com/v1/text:synthesize?key={key}", json=body, timeout=60)
+        r = requests.post("https://texttospeech.googleapis.com/v1/text:synthesize", headers={"x-goog-api-key": key}, json=body, timeout=60)
         r.raise_for_status()
         out_mp3.write_bytes(base64.b64decode(r.json()["audioContent"]))
         if db.CONN is not None:
             db.quota_add("google_tts")
         return True
     except Exception as e:
-        print(f"tts: google cloud tts falló: {e}")
+        print("tts: google cloud tts falló:", db.redact(e))
         if db.CONN is not None:
             db.quota_add("google_tts", calls=0, errors=1)
         return False
